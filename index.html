@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Pro Forex Journal | Track Your Trades</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #ffffff;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 24px; }
+        .header h1 { font-size: 1.8rem; background: linear-gradient(135deg, #00d4aa, #00b894); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .header p { font-size: 0.8rem; color: #a0a4c0; }
+        .free-badge { display: inline-block; background: #00d4aa; color: #0a0e27; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-top: 8px; }
+
+        /* Stats Dashboard */
+        .stats-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; margin-bottom: 24px; }
+        .stat-card { background: #0f1235; border: 1px solid #1e2268; border-radius: 16px; padding: 12px; text-align: center; }
+        .stat-label { font-size: 0.6rem; text-transform: uppercase; color: #a0a4c0; margin-bottom: 4px; }
+        .stat-value { font-size: 1rem; font-weight: 700; color: #00d4aa; }
+
+        /* Upgrade Banner */
+        .upgrade-banner { background: linear-gradient(135deg, #ff6b6b, #ee5a24); border-radius: 20px; padding: 16px; text-align: center; margin-bottom: 20px; display: none; }
+        .upgrade-banner.show { display: block; }
+        .upgrade-btn { background: #ffffff; color: #ee5a24; padding: 8px 20px; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 0.8rem; display: inline-block; }
+
+        /* Charts */
+        .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+        .chart-card { background: #0f1235; border: 1px solid #1e2268; border-radius: 16px; padding: 12px; }
+        .chart-card h4 { font-size: 0.8rem; margin-bottom: 10px; color: #00d4aa; }
+        canvas { max-height: 200px; width: 100%; }
+
+        /* Performance Tables */
+        .perf-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 20px; }
+        .perf-card { background: #0f1235; border: 1px solid #1e2268; border-radius: 16px; padding: 12px; }
+        .perf-card h4 { font-size: 0.8rem; margin-bottom: 10px; color: #00d4aa; }
+        .perf-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1e2268; font-size: 0.7rem; }
+        .perf-value { color: #00d4aa; font-weight: 600; }
+
+        /* Buttons */
+        .action-buttons { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .btn-secondary { background: #1a1e4a; border: 1px solid #2a2e6a; color: #a0a4c0; padding: 10px 16px; border-radius: 30px; font-size: 0.75rem; cursor: pointer; flex: 1; text-align: center; }
+        .btn-secondary:hover { background: #2a2e6a; }
+        .btn-resource { background: #00d4aa; color: #0a0e27; border: none; padding: 10px 16px; border-radius: 30px; font-size: 0.75rem; cursor: pointer; flex: 1; text-align: center; font-weight: 700; }
+        .btn-resource:hover { background: #00b894; }
+
+        /* Trades Table */
+        .trades-section { background: #0f1235; border: 1px solid #1e2268; border-radius: 20px; padding: 16px; margin-bottom: 20px; }
+        .section-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; color: #00d4aa; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
+        th, td { padding: 10px 6px; text-align: left; border-bottom: 1px solid #1e2268; }
+        th { color: #a0a4c0; font-weight: 600; }
+        .win { color: #00d4aa; font-weight: 600; }
+        .loss { color: #ff6b6b; font-weight: 600; }
+        .delete-btn { background: transparent; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 4px 10px; border-radius: 16px; cursor: pointer; font-size: 0.6rem; }
+
+        /* Form */
+        .form-section { background: #0f1235; border: 1px solid #1e2268; border-radius: 20px; padding: 16px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.65rem; color: #a0a4c0; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { background: #1a1e4a; border: 1px solid #2a2e6a; padding: 10px; border-radius: 12px; color: white; font-size: 0.75rem; font-family: 'Inter', sans-serif; }
+        .full-width { grid-column: span 4; }
+        .btn-primary { background: linear-gradient(135deg, #00d4aa, #00b894); color: #0a0e27; border: none; padding: 14px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; cursor: pointer; margin-top: 16px; width: 100%; }
+
+        /* Affiliate Banner */
+        .affiliate-banner { background: linear-gradient(135deg, #1a1e4a, #0f1235); border: 1px solid #00d4aa; border-radius: 20px; padding: 16px; text-align: center; margin-bottom: 20px; }
+        .affiliate-link { background: #00d4aa; color: #0a0e27; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 0.8rem; display: inline-block; }
+        .footer { text-align: center; font-size: 0.65rem; color: #6a6e8a; margin-top: 20px; }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📊 Pro Forex Journal</h1>
+        <p>Track. Analyze. Improve. Everything a trader needs.</p>
+        <div class="free-badge" id="freeBadge">🎯 25 FREE TRADES REMAINING</div>
+    </div>
+
+    <div class="upgrade-banner" id="upgradeBanner">
+        <h3>🔒 Free Trial Limit Reached</h3>
+        <p>You have used your 25 free trades. Upgrade to unlimited for ₦5,000 one-time.</p>
+        <a href="#" class="upgrade-btn" onclick="alert('Contact Michael on WhatsApp: 0803 295 8122 to upgrade')">Upgrade Now →</a>
+    </div>
+
+    <div class="stats-dashboard" id="statsDashboard">
+        <div class="stat-card"><div class="stat-label">Total Trades</div><div class="stat-value" id="totalTrades">0</div></div>
+        <div class="stat-card"><div class="stat-label">Win Rate</div><div class="stat-value" id="winRate">0%</div></div>
+        <div class="stat-card"><div class="stat-label">Total P/L</div><div class="stat-value" id="totalPL">$0</div></div>
+        <div class="stat-card"><div class="stat-label">Profit Factor</div><div class="stat-value" id="profitFactor">0.00</div></div>
+        <div class="stat-card"><div class="stat-label">Avg RR</div><div class="stat-value" id="avgRR">0:0</div></div>
+        <div class="stat-card"><div class="stat-label">Best Trade</div><div class="stat-value" id="bestTrade">$0</div></div>
+        <div class="stat-card"><div class="stat-label">Worst Trade</div><div class="stat-value" id="worstTrade">$0</div></div>
+        <div class="stat-card"><div class="stat-label">Expectancy</div><div class="stat-value" id="expectancy">$0</div></div>
+        <div class="stat-card"><div class="stat-label">Consecutive Wins</div><div class="stat-value" id="consecutiveWins">0</div></div>
+        <div class="stat-card"><div class="stat-label">Max Drawdown</div><div class="stat-value" id="maxDrawdown">$0</div></div>
+        <div class="stat-card"><div class="stat-label">Sharpe Ratio</div><div class="stat-value" id="sharpeRatio">0.00</div></div>
+        <div class="stat-card"><div class="stat-label">Trades Left</div><div class="stat-value" id="tradesLeft">25</div></div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card"><h4>📈 Equity Curve</h4><canvas id="equityChart"></canvas></div>
+        <div class="chart-card"><h4>📊 Monthly P/L</h4><canvas id="monthlyChart"></canvas></div>
+    </div>
+
+    <div class="perf-grid">
+        <div class="perf-card"><h4>🕒 Session Performance</h4><div id="sessionStats"></div></div>
+        <div class="perf-card"><h4>💰 Pair Performance</h4><div id="pairStats"></div></div>
+        <div class="perf-card"><h4>⚡ Strategy Performance</h4><div id="strategyStats"></div></div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn-secondary" onclick="exportCSV()">📥 Export CSV</button>
+        <button class="btn-secondary" onclick="importCSV()">📤 Import CSV</button>
+        <button class="btn-secondary" onclick="clearAllData()">🗑️ Clear All Data</button>
+        <button class="btn-secondary" onclick="scrollToForm()">➕ Add Trade</button>
+        <a href="resources.html" class="btn-resource">📋 Compare Prop Firms & Brokers →</a>
+    </div>
+
+    <div class="affiliate-banner">
+        <h3>🚀 Start Trading with WeMasterTrade</h3>
+        <p>Trusted platform for Forex & Crypto. Get started today.</p>
+        <a href="https://my.wemastertrade.com/register?ref=176192" class="affiliate-link" target="_blank">Open Account →</a>
+    </div>
+
+    <div class="trades-section">
+        <div class="section-title">📋 Trade Log <span id="tradeCount">0 trades</span></div>
+        <div class="table-container">
+            <table id="tradesTable">
+                <thead><tr><th>Date</th><th>Time</th><th>Session</th><th>Pair</th><th>Type</th><th>Entry</th><th>Exit</th><th>Lots</th><th>Pips</th><th>P/L</th><th>RR</th><th>Strategy</th><th></th></tr></thead>
+                <tbody id="tradesBody"><td><td colspan="13" style="text-align:center; padding:40px;">No trades yet. Add your first trade below.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="form-section" id="formSection">
+        <div class="section-title">➕ Add New Trade</div>
+        <div class="form-grid">
+            <div class="form-group"><label>Date</label><input type="date" id="tradeDate" value="2025-04-04"></div>
+            <div class="form-group"><label>Time (24hr)</label><input type="time" id="tradeTime" value="14:00"></div>
+            <div class="form-group"><label>Pair</label><select id="tradePair"><option value="EURUSD">EUR/USD</option><option value="GBPUSD">GBP/USD</option><option value="USDJPY">USD/JPY</option><option value="XAUUSD">XAU/USD</option></select></div>
+            <div class="form-group"><label>Type</label><select id="tradeType"><option value="long">Long ↗️</option><option value="short">Short ↙️</option></select></div>
+            <div class="form-group"><label>Lots</label><input type="number" id="tradeLots" step="0.01" value="0.01"></div>
+            <div class="form-group"><label>Entry</label><input type="number" id="tradeEntry" step="0.00001" placeholder="1.23456"></div>
+            <div class="form-group"><label>Exit</label><input type="number" id="tradeExit" step="0.00001" placeholder="1.23456"></div>
+            <div class="form-group"><label>SL</label><input type="number" id="tradeSL" step="0.00001" placeholder="1.23000"></div>
+            <div class="form-group"><label>TP</label><input type="number" id="tradeTP" step="0.00001" placeholder="1.24000"></div>
+            <div class="form-group"><label>Strategy</label><input type="text" id="tradeStrategy" placeholder="Breakout, EMA..."></div>
+            <div class="form-group full-width"><label>Notes</label><textarea id="tradeNotes" rows="2" placeholder="Trade reasoning, emotions, lessons..."></textarea></div>
+        </div>
+        <button class="btn-primary" onclick="addTrade()">✅ Add Trade</button>
+    </div>
+
+    <div class="footer"><p>📊 25 FREE TRADES included. Upgrade to unlimited for ₦5,000 one-time.</p><p>⚡ Risk Disclaimer: Past performance does not guarantee future results.</p></div>
+</div>
+
+<script>
+    let trades = JSON.parse(localStorage.getItem('proForexJournal')) || [];
+    let freeTradesLimit = 25;
+    let equityChart, monthlyChart;
+
+    function getTradingSession(timeStr) { if (!timeStr) return 'Unknown'; let hour = parseInt(timeStr.split(':')[0]); if (hour >= 0 && hour < 9) return 'Asian'; if (hour >= 8 && hour < 17) return 'London'; if (hour >= 13 && hour < 22) return 'New York'; if (hour >= 13 && hour < 17) return 'Overlap'; return 'Other'; }
+    function getSessionClass(s) { if (s === 'Asian') return 'session-asian'; if (s === 'London') return 'session-london'; if (s === 'New York') return 'session-newyork'; if (s === 'Overlap') return 'session-overlap'; return ''; }
+    function calculatePips(entry, exit, type, pair) { let diff = type === 'long' ? exit - entry : entry - exit; let pipValue = pair === 'USDJPY' ? 0.01 : 0.0001; if (pair === 'XAUUSD') pipValue = 0.1; return (diff / pipValue).toFixed(1); }
+    function calculateProfit(entry, exit, type, lots, pair) { let pips = parseFloat(calculatePips(entry, exit, type, pair)); let pipCost = pair === 'USDJPY' ? 9.2 : (pair === 'XAUUSD' ? 1 : 10); return (pips * lots * pipCost).toFixed(2); }
+    function calculateRR(entry, exit, sl, type) { if (!sl) return 'N/A'; let risk = type === 'long' ? entry - sl : sl - entry; let reward = type === 'long' ? exit - entry : entry - exit; if (risk <= 0) return 'N/A'; return ((reward / risk).toFixed(1) + ':1'); }
+
+    function updateStatsAndCharts() {
+        let total = trades.length, canAddMore = total < freeTradesLimit;
+        document.getElementById('upgradeBanner').classList.toggle('show', !canAddMore && total >= freeTradesLimit);
+        document.getElementById('freeBadge').innerHTML = canAddMore ? `🎯 ${freeTradesLimit - total} FREE TRADES REMAINING` : '🔒 TRIAL EXPIRED - UPGRADE TO CONTINUE';
+        document.getElementById('tradesLeft').innerText = Math.max(0, freeTradesLimit - total);
+        let wins = trades.filter(t => parseFloat(t.profit) > 0).length, winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+        let totalProfit = trades.reduce((sum, t) => sum + parseFloat(t.profit), 0);
+        let grossWins = trades.filter(t => parseFloat(t.profit) > 0).reduce((sum, t) => sum + parseFloat(t.profit), 0);
+        let grossLosses = Math.abs(trades.filter(t => parseFloat(t.profit) < 0).reduce((sum, t) => sum + parseFloat(t.profit), 0));
+        let profitFactor = grossLosses > 0 ? (grossWins / grossLosses).toFixed(2) : grossWins > 0 ? '∞' : '0.00';
+        let rrSum = 0, rrCount = 0; trades.forEach(t => { if (t.rr && t.rr !== 'N/A') { let val = parseFloat(t.rr); if (!isNaN(val)) { rrSum += val; rrCount++; } } });
+        let avgRR = rrCount > 0 ? (rrSum / rrCount).toFixed(1) + ':1' : '0:1';
+        let profits = trades.map(t => parseFloat(t.profit));
+        let bestTrade = profits.length > 0 ? Math.max(...profits).toFixed(2) : 0, worstTrade = profits.length > 0 ? Math.min(...profits).toFixed(2) : 0;
+        let expectancy = total > 0 ? (totalProfit / total).toFixed(2) : 0;
+        let consecutiveWins = 0; for (let i = trades.length - 1; i >= 0; i--) { if (parseFloat(trades[i].profit) > 0) consecutiveWins++; else break; }
+        let cumulative = 0, maxDrawdown = 0, peak = 0; trades.forEach(t => { cumulative += parseFloat(t.profit); peak = Math.max(peak, cumulative); maxDrawdown = Math.min(maxDrawdown, cumulative - peak); });
+        let returns = trades.map(t => parseFloat(t.profit)), mean = returns.reduce((a,b) => a + b, 0) / returns.length, variance = returns.reduce((a,b) => a + Math.pow(b - mean, 2), 0) / returns.length, sharpe = (mean / Math.sqrt(variance)).toFixed(2);
+        document.getElementById('totalTrades').innerText = total; document.getElementById('winRate').innerText = winRate + '%'; document.getElementById('totalPL').innerText = '$' + totalProfit.toFixed(2);
+        document.getElementById('profitFactor').innerText = profitFactor; document.getElementById('avgRR').innerText = avgRR; document.getElementById('bestTrade').innerText = '$' + bestTrade;
+        document.getElementById('worstTrade').innerText = '$' + worstTrade; document.getElementById('expectancy').innerText = '$' + expectancy; document.getElementById('consecutiveWins').innerText = consecutiveWins;
+        document.getElementById('maxDrawdown').innerText = '$' + Math.abs(maxDrawdown).toFixed(2); document.getElementById('sharpeRatio').innerText = sharpe;
+
+        let sessionData = {}; trades.forEach(t => { if (!sessionData[t.session]) sessionData[t.session] = { wins: 0, total: 0 }; sessionData[t.session].total++; if (parseFloat(t.profit) > 0) sessionData[t.session].wins++; });
+        let sessionHtml = ''; for (let s in sessionData) { let wr = (sessionData[s].wins / sessionData[s].total * 100).toFixed(0); sessionHtml += `<div class="perf-item"><span>${s}</span><span class="perf-value">${wr}% (${sessionData[s].total})</span></div>`; }
+        document.getElementById('sessionStats').innerHTML = sessionHtml || '<div class="perf-item">No data yet</div>';
+        let pairData = {}; trades.forEach(t => { if (!pairData[t.pair]) pairData[t.pair] = { wins: 0, total: 0 }; pairData[t.pair].total++; if (parseFloat(t.profit) > 0) pairData[t.pair].wins++; });
+        let pairHtml = ''; for (let p in pairData) { let wr = (pairData[p].wins / pairData[p].total * 100).toFixed(0); pairHtml += `<div class="perf-item"><span>${p}</span><span class="perf-value">${wr}% (${pairData[p].total})</span></div>`; }
+        document.getElementById('pairStats').innerHTML = pairHtml || '<div class="perf-item">No data yet</div>';
+        let stratData = {}; trades.forEach(t => { let strat = t.strategy || 'Uncategorized'; if (!stratData[strat]) stratData[strat] = { wins: 0, total: 0 }; stratData[strat].total++; if (parseFloat(t.profit) > 0) stratData[strat].wins++; });
+        let stratHtml = ''; for (let st in stratData) { let wr = (stratData[st].wins / stratData[st].total * 100).toFixed(0); stratHtml += `<div class="perf-item"><span>${st}</span><span class="perf-value">${wr}% (${stratData[st].total})</span></div>`; }
+        document.getElementById('strategyStats').innerHTML = stratHtml || '<div class="perf-item">No data yet</div>';
+
+        let equityData = [], cum = 0; trades.forEach(t => { cum += parseFloat(t.profit); equityData.push(cum); });
+        if (equityChart) equityChart.destroy();
+        equityChart = new Chart(document.getElementById('equityChart'), { type: 'line', data: { labels: equityData.map((_,i) => i+1), datasets: [{ label: 'Equity Curve', data: equityData, borderColor: '#00d4aa', fill: false, tension: 0.1 }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#fff' } } } } });
+        let monthly = {}; trades.forEach(t => { let month = t.date.substring(0,7); if (!monthly[month]) monthly[month] = 0; monthly[month] += parseFloat(t.profit); });
+        let months = Object.keys(monthly).sort();
+        if (monthlyChart) monthlyChart.destroy();
+        monthlyChart = new Chart(document.getElementById('monthlyChart'), { type: 'bar', data: { labels: months, datasets: [{ label: 'Monthly P/L', data: months.map(m => monthly[m]), backgroundColor: '#00d4aa' }] }, options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { labels: { color: '#fff' } } } } });
+    }
+
+    function renderTrades() {
+        let tbody = document.getElementById('tradesBody');
+        if (trades.length === 0) { tbody.innerHTML = '<tr><td colspan="13" style="text-align:center; padding:40px;">No trades yet. Add your first trade above.</td></tr>'; updateStatsAndCharts(); return; }
+        tbody.innerHTML = trades.map((trade, index) => `<tr><td>${trade.date}</td><td>${trade.time || '—'}</td><td>${trade.session}</td><td>${trade.pair}</td><td>${trade.type === 'long' ? 'Long ↗️' : 'Short ↙️'}</td><td>${trade.entry}</td><td>${trade.exit}</td><td>${trade.lots}</td><td>${trade.pips}</td><td class="${parseFloat(trade.profit) >= 0 ? 'win' : 'loss'}">${parseFloat(trade.profit) >= 0 ? '+' : ''}$${trade.profit}</td><td>${trade.rr || 'N/A'}</td><td>${trade.strategy || '-'}</td><td><button class="delete-btn" onclick="deleteTrade(${index})">Delete</button></td></tr>`).join('');
+        updateStatsAndCharts();
+    }
+
+    function addTrade() {
+        if (trades.length >= freeTradesLimit) { alert(`You have used your ${freeTradesLimit} free trades. Please upgrade to continue.`); return; }
+        let date = document.getElementById('tradeDate').value, time = document.getElementById('tradeTime').value, pair = document.getElementById('tradePair').value, type = document.getElementById('tradeType').value, lots = parseFloat(document.getElementById('tradeLots').value), entry = parseFloat(document.getElementById('tradeEntry').value), exit = parseFloat(document.getElementById('tradeExit').value), sl = parseFloat(document.getElementById('tradeSL').value), strategy = document.getElementById('tradeStrategy').value, notes = document.getElementById('tradeNotes').value;
+        if (!date || isNaN(entry) || isNaN(exit) || isNaN(lots)) { alert('Please fill in Date, Entry, Exit, and Lot Size'); return; }
+        let session = getTradingSession(time), pips = calculatePips(entry, exit, type, pair), profit = calculateProfit(entry, exit, type, lots, pair), rr = calculateRR(entry, exit, sl, type);
+        trades.push({ date, time, session, pair, type, lots, entry, exit, sl, strategy, notes, pips, profit, rr });
+        localStorage.setItem('proForexJournal', JSON.stringify(trades)); renderTrades();
+        document.getElementById('tradeEntry').value = ''; document.getElementById('tradeExit').value = ''; document.getElementById('tradeSL').value = ''; document.getElementById('tradeStrategy').value = ''; document.getElementById('tradeNotes').value = ''; document.getElementById('tradeLots').value = '0.01'; document.getElementById('tradeTime').value = '14:00';
+    }
+    function deleteTrade(index) { trades.splice(index, 1); localStorage.setItem('proForexJournal', JSON.stringify(trades)); renderTrades(); }
+    function exportCSV() { if (trades.length === 0) { alert('No trades to export'); return; } let csv = "Date,Time,Session,Pair,Type,Lots,Entry,Exit,SL,Pips,Profit,R/R,Strategy,Notes\n"; trades.forEach(t => { csv += `"${t.date}",${t.time || ''},${t.session},${t.pair},${t.type},${t.lots},${t.entry},${t.exit},${t.sl || ''},${t.pips},${t.profit},${t.rr || ''},"${t.strategy || ''}","${t.notes || ''}"\n`; }); let blob = new Blob([csv], {type: "text/csv"}); let a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `forex_journal_${new Date().toISOString().slice(0,10)}.csv`; a.click(); }
+    function importCSV() { let input = document.createElement('input'); input.type = 'file'; input.accept = '.csv'; input.onchange = e => { let file = e.target.files[0]; let reader = new FileReader(); reader.onload = function(ev) { let lines = ev.target.result.split('\n'); let newTrades = []; for (let i = 1; i < lines.length; i++) { let cols = lines[i].split(','); if (cols.length >= 12 && cols[0] && cols[0] !== '"Date"') { newTrades.push({ date: cols[0].replace(/"/g,''), time: cols[1].replace(/"/g,''), session: cols[2].replace(/"/g,''), pair: cols[3].replace(/"/g,''), type: cols[4].replace(/"/g,''), lots: parseFloat(cols[5]), entry: parseFloat(cols[6]), exit: parseFloat(cols[7]), sl: parseFloat(cols[8]), pips: cols[9], profit: cols[10], rr: cols[11], strategy: cols[12] ? cols[12].replace(/"/g,'') : '', notes: cols[13] ? cols[13].replace(/"/g,'') : '' }); } } trades = newTrades; localStorage.setItem('proForexJournal', JSON.stringify(trades)); renderTrades(); alert('Import successful!'); }; reader.readAsText(file); }; input.click(); }
+    function clearAllData() { if (confirm('⚠️ WARNING: This will delete ALL your trade data. Are you sure?')) { trades = []; localStorage.setItem('proForexJournal', JSON.stringify(trades)); renderTrades(); } }
+    function scrollToForm() { document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' }); }
+    renderTrades();
+</script>
+</body>
+</html>
