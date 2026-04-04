@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Prop Firms & Brokers Comparison | Forex Resources</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0e27;
+            color: #ffffff;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 2rem; background: linear-gradient(135deg, #00d4aa, #00b894); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .header p { color: #a0a4c0; margin-top: 8px; }
+
+        .back-btn { display: inline-block; background: #1a1e4a; border: 1px solid #2a2e6a; color: #a0a4c0; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-size: 0.8rem; margin-bottom: 20px; }
+        .back-btn:hover { background: #2a2e6a; }
+
+        .section-title { font-size: 1.3rem; margin: 30px 0 20px; color: #00d4aa; border-left: 3px solid #00d4aa; padding-left: 15px; }
+
+        .comparison-table { width: 100%; border-collapse: collapse; background: #0f1235; border-radius: 16px; overflow: hidden; margin-bottom: 30px; }
+        .comparison-table th, .comparison-table td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #1e2268; vertical-align: top; }
+        .comparison-table th { background: #1a1e4a; color: #00d4aa; font-weight: 600; }
+        .comparison-table tr:last-child td { border-bottom: none; }
+
+        .featured-badge { background: #00d4aa; color: #0a0e27; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: 700; display: inline-block; margin-right: 8px; }
+
+        .affiliate-link { color: #00d4aa; text-decoration: none; font-weight: 600; }
+        .affiliate-link:hover { text-decoration: underline; }
+
+        .pros-list, .cons-list { font-size: 0.75rem; margin: 4px 0; }
+        .pros { color: #00d4aa; }
+        .cons { color: #ff6b6b; }
+
+        .loading { text-align: center; padding: 40px; color: #a0a4c0; }
+        .error { text-align: center; padding: 40px; color: #ff6b6b; }
+
+        .footer { text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #1e2268; font-size: 0.7rem; color: #6a6e8a; }
+
+        @media (max-width: 768px) {
+            .comparison-table th, .comparison-table td { font-size: 0.7rem; padding: 8px 6px; }
+            .section-title { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <a href="index.html" class="back-btn">← Back to Trading Journal</a>
+
+    <div class="header">
+        <h1>📋 Prop Firms & Brokers Comparison</h1>
+        <p>Live data from my spreadsheet – updated automatically. Find the best funded programs and brokers.</p>
+    </div>
+
+    <div id="loading" class="loading">Loading data from spreadsheet...</div>
+    <div id="error" class="error" style="display:none;">Failed to load data. Please try again later.</div>
+
+    <div id="propFirmsTable" style="display:none;">
+        <h2 class="section-title">🏆 Prop Firms (Get Funded to Trade)</h2>
+        <table class="comparison-table" id="propFirmsTableBody">
+            <thead><tr><th>Firm</th><th>Commission</th><th>Payout</th><th>Advantages</th><th>Disadvantages</th><th>Best For</th><th>Link</th></tr></thead>
+            <tbody></tbody>
+        </table>
+
+        <h2 class="section-title">💱 Forex Brokers (Real Trading)</h2>
+        <table class="comparison-table" id="brokersTableBody">
+            <thead><tr><th>Broker</th><th>Commission</th><th>Payout</th><th>Advantages</th><th>Disadvantages</th><th>Best For</th><th>Link</th></tr></thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        <p>📊 Data powered by Google Sheets & SheetDB. Updated automatically when I edit the spreadsheet.</p>
+        <p>⚠️ Risk Warning: Trading forex and CFDs carries high risk. Only trade with money you can afford to lose.</p>
+    </div>
+</div>
+
+<script>
+    const SHEETDB_URL = 'https://sheetdb.io/api/v1/eizek3qs2z56o';
+
+    async function loadData() {
+        try {
+            const response = await fetch(SHEETDB_URL);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            console.log('Data loaded:', data.length, 'rows');
+
+            if (!data || data.length === 0) {
+                document.getElementById('loading').innerHTML = 'No data found. Please add prop firms and brokers to your Google Sheet.';
+                return;
+            }
+
+            // Separate prop firms and brokers
+            const propFirms = data.filter(row => row.type && row.type.toLowerCase().includes('prop'));
+            const brokers = data.filter(row => row.type && row.type.toLowerCase().includes('broker'));
+
+            renderTable('propFirmsTableBody', propFirms);
+            renderTable('brokersTableBody', brokers);
+
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('propFirmsTable').style.display = 'block';
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+    }
+
+    function renderTable(tableId, items) {
+        const tbody = document.getElementById(tableId);
+        if (!tbody) return;
+
+        if (items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">No entries found in this category.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = items.map(item => `
+            <tr>
+                <td><strong>${escapeHtml(item.name)}</strong> ${item.featured === 'true' ? '<span class="featured-badge">🔥 Featured</span>' : ''}</td>
+                <td>${escapeHtml(item.commission || '-')}</td>
+                <td>${escapeHtml(item.payout || '-')}</td>
+                <td class="pros-list"><span class="pros">✅</span> ${escapeHtml(item.advantages || '-').replace(/,/g, '<br>✅ ')}</td>
+                <td class="cons-list"><span class="cons">❌</span> ${escapeHtml(item.disadvantages || '-').replace(/,/g, '<br>❌ ')}</td>
+                <td>${escapeHtml(item.best_for || '-')}</td>
+                <td>${item.affiliate_link ? `<a href="${escapeHtml(item.affiliate_link)}" target="_blank" class="affiliate-link">Sign up →</a>` : '-'}</td>
+            </tr>
+        `).join('');
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/\n/g, '<br>');
+    }
+
+    loadData();
+</script>
+</body>
+</html>
