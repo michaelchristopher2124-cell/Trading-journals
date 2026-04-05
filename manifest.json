@@ -1,0 +1,21 @@
+{
+    "name": "Pro Forex Journal",
+    "short_name": "ForexJournal",
+    "description": "Track your trades, analyze performance, improve results",
+    "start_url": "index.html",
+    "display": "standalone",
+    "theme_color": "#0a0e27",
+    "background_color": "#0a0e27",
+    "icons": [
+        {
+            "src": "icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
